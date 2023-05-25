@@ -11,7 +11,7 @@ public class ExcelGenerator {
         try (
                 InputStream templateStream = new FileInputStream(new File(templatePath));
                 OutputStream outputStream = new FileOutputStream(new File(outputPath));
-                WorkbookFactory factory = createWorkbookFactory()
+                WorkbookAbstractFactory factory = createWorkbookAbstractFactory()
         ) {
             WorkbookBuilder workbookBuilder = new WorkbookBuilder(factory);
             Workbook workbook = workbookBuilder
@@ -44,30 +44,37 @@ public class ExcelGenerator {
         }
     }
 
-    private static WorkbookFactory createWorkbookFactory() {
+    private static WorkbookAbstractFactory createWorkbookAbstractFactory() {
         //specific factory
-        return new DefaultWorkbookFactory();
+        return new DefaultWorkbookAbstractFactory();
     }
 }
 
-interface WorkbookFactory {
+interface WorkbookAbstractFactory {
     Workbook createWorkbook(InputStream templateStream) throws IOException;
+
+    Sheet createSheet(Workbook workbook, String sheetName);
 }
 
-class DefaultWorkbookFactory implements WorkbookFactory {
+class DefaultWorkbookAbstractFactory implements WorkbookAbstractFactory {
     @Override
     public Workbook createWorkbook(InputStream templateStream) throws IOException {
         return WorkbookFactory.create(templateStream);
     }
+
+    @Override
+    public Sheet createSheet(Workbook workbook, String sheetName) {
+        return workbook.createSheet(sheetName);
+    }
 }
 
 class WorkbookBuilder {
-    private WorkbookFactory workbookFactory;
+    private WorkbookAbstractFactory workbookFactory;
     private InputStream templateStream;
     private String outputPath;
     private Workbook workbook;
 
-    public WorkbookBuilder(WorkbookFactory workbookFactory) {
+    public WorkbookBuilder(WorkbookAbstractFactory workbookFactory) {
         this.workbookFactory = workbookFactory;
     }
 
@@ -85,7 +92,7 @@ class WorkbookBuilder {
         if (workbook == null) {
             workbook = workbookFactory.createWorkbook(templateStream);
         }
-        workbook.createSheet(sheetName);
+        workbookFactory.createSheet(workbook, sheetName);
         return this;
     }
 
@@ -93,3 +100,21 @@ class WorkbookBuilder {
         return workbook;
     }
 }
+
+class SheetDecorator implements Sheet {
+    private Sheet decoratedSheet;
+
+    public SheetDecorator(Sheet decoratedSheet) {
+        this.decoratedSheet = decoratedSheet;
+    }
+
+    // todo Implement the Sheet interface methods by forwarding the calls to the decorated sheet
+    @Override
+    public void createRow(int rownum) {
+        decoratedSheet.createRow(rownum);
+    }
+
+    // todo Additional methods to increase the number of rows
+    public void createRows(int startRow, int endRow) {
+        for (int i = startRow; i <= endRow; i++) {
+           
