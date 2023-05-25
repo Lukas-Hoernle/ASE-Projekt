@@ -11,8 +11,10 @@ public class ExcelGenerator {
         try (
                 InputStream templateStream = new FileInputStream(new File(templatePath));
                 OutputStream outputStream = new FileOutputStream(new File(outputPath));
-                Workbook workbook = WorkbookFactory.create(templateStream)
+                WorkbookFactory factory = createWorkbookFactory()
         ) {
+            Workbook workbook = factory.createWorkbook(templateStream);
+
             Sheet sheet = workbook.getSheetAt(0);
             Row row = sheet.getRow(0);
             Cell cell = row.getCell(0);
@@ -22,5 +24,21 @@ public class ExcelGenerator {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static WorkbookFactory createWorkbookFactory() {
+        //specific factory
+        return new DefaultWorkbookFactory();
+    }
+}
+
+interface WorkbookFactory {
+    Workbook createWorkbook(InputStream templateStream) throws IOException;
+}
+
+class DefaultWorkbookFactory implements WorkbookFactory {
+    @Override
+    public Workbook createWorkbook(InputStream templateStream) throws IOException {
+        return WorkbookFactory.create(templateStream);
     }
 }
