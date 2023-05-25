@@ -108,13 +108,46 @@ class SheetDecorator implements Sheet {
         this.decoratedSheet = decoratedSheet;
     }
 
-    // todo Implement the Sheet interface methods by forwarding the calls to the decorated sheet
+    // Implement the Sheet interface methods by forwarding the calls to the decorated sheet
     @Override
     public void createRow(int rownum) {
         decoratedSheet.createRow(rownum);
     }
 
-    // todo Additional methods to increase the number of rows
+    // Additional methods to increase the number of rows
     public void createRows(int startRow, int endRow) {
         for (int i = startRow; i <= endRow; i++) {
-           
+            decoratedSheet.createRow(i);
+        }
+    }
+
+    // ... Implement other Sheet interface methods and additional methods as needed
+}
+
+class StrategySheetDecorator extends SheetDecorator {
+    private RowStrategy rowStrategy;
+
+    public StrategySheetDecorator(Sheet decoratedSheet, RowStrategy rowStrategy) {
+        super(decoratedSheet);
+        this.rowStrategy = rowStrategy;
+    }
+
+    // Override the createRows method to apply the row strategy
+    @Override
+    public void createRows(int startRow, int endRow) {
+        for (int i = startRow; i <= endRow; i++) {
+            rowStrategy.createRow(super.decoratedSheet, i);
+        }
+    }
+}
+
+interface RowStrategy {
+    void createRow(Sheet sheet, int rownum);
+}
+
+class DefaultRowStrategy implements RowStrategy {
+    @Override
+    public void createRow(Sheet sheet, int rownum) {
+        sheet.createRow(rownum);
+    }
+}
