@@ -1,58 +1,79 @@
-import org.apache.poi.ss.usermodel.;
-import java.io.;
+import org.apache.poi.ss.usermodel.*;
+import java.io.*;
 
 public class ExcelApi {
-private Workbook workbook;
-public ExcelApi(String filePath) throws IOException {
-    try (InputStream inputStream = new FileInputStream(new File(filePath))) {
-        workbook = WorkbookFactory.create(inputStream);
+    private Workbook workbook;
+
+    private ExcelApi(Workbook workbook) {
+        this.workbook = workbook;
     }
-}
 
-public void setValue(String sheetName, int row, int column, String value) {
-    Sheet sheet = workbook.getSheet(sheetName);
-    if (sheet != null) {
-        Row sheetRow = sheet.getRow(row);
-        if (sheetRow == null) {
-            sheetRow = sheet.createRow(row);
-        }
-        Cell cell = sheetRow.getCell(column);
-        if (cell == null) {
-            cell = sheetRow.createCell(column);
-        }
-        cell.setCellValue(value);
-    }
-}
-
-public void saveToFile(String filePath) throws IOException {
-    try (OutputStream outputStream = new FileOutputStream(new File(filePath))) {
-        workbook.write(outputStream);
-    }
-}
-
-// Additional methods for accessing Excel data and performing operations
-
-public String getValue(String sheetName, int row, int column) {
-    Sheet sheet = workbook.getSheet(sheetName);
-    if (sheet != null) {
-        Row sheetRow = sheet.getRow(row);
-        if (sheetRow != null) {
+    public void setValue(String sheetName, int row, int column, String value) {
+        Sheet sheet = workbook.getSheet(sheetName);
+        if (sheet != null) {
+            Row sheetRow = sheet.getRow(row);
+            if (sheetRow == null) {
+                sheetRow = sheet.createRow(row);
+            }
             Cell cell = sheetRow.getCell(column);
-            if (cell != null) {
-                return cell.getStringCellValue();
+            if (cell == null) {
+                cell = sheetRow.createCell(column);
+            }
+            cell.setCellValue(value);
+        }
+    }
+
+    public void saveToFile(String filePath) throws IOException {
+        try (OutputStream outputStream = new FileOutputStream(new File(filePath))) {
+            workbook.write(outputStream);
+        }
+    }
+
+    public String getValue(String sheetName, int row, int column) {
+        Sheet sheet = workbook.getSheet(sheetName);
+        if (sheet != null) {
+            Row sheetRow = sheet.getRow(row);
+            if (sheetRow != null) {
+                Cell cell = sheetRow.getCell(column);
+                if (cell != null) {
+                    return cell.getStringCellValue();
+                }
             }
         }
+        return null;
     }
-    return null;
-}
 
-public int getRowCount(String sheetName) {
-    Sheet sheet = workbook.getSheet(sheetName);
-    if (sheet != null) {
-        return sheet.getLastRowNum() + 1;
+    public int getRowCount(String sheetName) {
+        Sheet sheet = workbook.getSheet(sheetName);
+        if (sheet != null) {
+            return sheet.getLastRowNum() + 1;
+        }
+        return 0;
     }
-    return 0;
-}
 
-// Other methods for data manipulation, formatting, etc.
+    // Other methods for data manipulation, formatting, etc.
+
+    public static class Builder {
+        private Workbook workbook;
+
+        public Builder() {
+            workbook = new XSSFWorkbook(); // or HSSFWorkbook for Excel 97-2003 format
+        }
+
+        public Builder setTemplate(String templatePath) throws IOException {
+            try (InputStream inputStream = new FileInputStream(new File(templatePath))) {
+                workbook = WorkbookFactory.create(inputStream);
+            }
+            return this;
+        }
+
+        public Builder addSheet(String sheetName) {
+            workbook.createSheet(sheetName);
+            return this;
+        }
+
+        public ExcelApi build() {
+            return new ExcelApi(workbook);
+        }
+    }
 }
