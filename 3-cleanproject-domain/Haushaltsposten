@@ -1,0 +1,50 @@
+public class Haushaltsposten {
+    private String name;
+    private double betrag;
+
+    private Haushaltsposten(String name, double betrag) {
+        this.name = name;
+        this.betrag = betrag;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getBetrag() {
+        return betrag;
+    }
+
+    public void erhoeheBetrag(double erhoehterBetrag) {
+        betrag += erhoehterBetrag;
+    }
+
+    public void verkleinereBetrag(double verkleinerterBetrag) {
+        betrag -= verkleinerterBetrag;
+    }
+
+    public static class HaushaltspostenBuilder {
+        private String name;
+        private double betrag;
+
+        public HaushaltspostenBuilder withName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public HaushaltspostenBuilder withBetrag(double betrag) {
+            this.betrag = betrag;
+            return this;
+        }
+
+        public Haushaltsposten build() {
+            return new Haushaltsposten(name, betrag);
+        }
+    }
+
+    public static class HaushaltspostenFactory {
+        public static Haushaltsposten createHaushaltsposten(String name, double betrag) {
+            return new Haushaltsposten(name, betrag);
+        }
+    }
+}
